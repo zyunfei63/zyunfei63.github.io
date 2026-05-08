@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zyunfei63.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.24.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"padding":18,"offset":12,"display":"post"},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"enable":true,"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="内存逃逸概念内存逃逸：本该分配在栈上的变量，被编译器强制分配到了堆上 逃逸可以接受的场景或者说利用这一点的场景1234567891011121314&#x2F;&#x2F; ✅ 大对象或生命周期长的对象func createLarge() *[]int &#123;    data :&#x3D; make([]int, 10000)    return &amp;data  &#x2F;&#x2F; 逃逸可接受，反正栈也放不下&#125;&#x2F;&#x2F;">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Go面试总结">
+<meta property="og:url" content="https://zyunfei63.github.io/_posts/goLang/go%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93.html">
+<meta property="og:site_name" content="Alex Hexo">
+<meta property="og:description" content="内存逃逸概念内存逃逸：本该分配在栈上的变量，被编译器强制分配到了堆上 逃逸可以接受的场景或者说利用这一点的场景1234567891011121314&#x2F;&#x2F; ✅ 大对象或生命周期长的对象func createLarge() *[]int &#123;    data :&#x3D; make([]int, 10000)    return &amp;data  &#x2F;&#x2F; 逃逸可接受，反正栈也放不下&#125;&#x2F;&#x2F;">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://zyunfei63.github.io/$%7Bimages%7D/image-20260508164424189.png">
+<meta property="og:image" content="https://zyunfei63.github.io/images/image-20260508164424189.png">
+<meta property="article:published_time" content="2026-05-07T06:32:42.000Z">
+<meta property="article:modified_time" content="2026-05-08T08:44:49.432Z">
+<meta property="article:author" content="zyunfei">
+<meta property="article:tag" content="Java, go,js,Resume">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zyunfei63.github.io/$%7Bimages%7D/image-20260508164424189.png">
+
+
+<link rel="canonical" href="https://zyunfei63.github.io/_posts/goLang/go%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"en","comments":true,"permalink":"https://zyunfei63.github.io/_posts/goLang/go%E9%9D%A2%E8%AF%95%E6%80%BB%E7%BB%93.html","path":"_posts/goLang/go面试总结.html","title":"Go面试总结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Go面试总结 | Alex Hexo
+</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5GF5PJZTEZ"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-5GF5PJZTEZ","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js" defer></script>
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Alex Hexo</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">可以开发出自己的博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/home" rel="section"><i class="fas fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-总览"><a href="/html/" rel="section"><i class="fas fa-briefcase fa-fw"></i>总览</a></li><li class="menu-item menu-item-归档"><a href="/archives/" rel="section"><i class="fas fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-分类"><a href="/categories/" rel="section"><i class="fas fa-folder fa-fw"></i>分类</a></li><li class="menu-item menu-item-简历"><a href="/resume/" rel="section"><i class="fas fa-briefcase fa-fw"></i>简历</a></li><li class="menu-item menu-item-github"><a href="https://github.com/zyunfei63" rel="section" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a></li><li class="menu-item menu-item-search"><a href="/search/" rel="section"><i class="fa fa-search fa-fw"></i>Search</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="Searching..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E9%80%83%E9%80%B8"><span class="nav-number">1.</span> <span class="nav-text">内存逃逸</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%83%E9%80%B8%E5%8F%AF%E4%BB%A5%E6%8E%A5%E5%8F%97%E7%9A%84%E5%9C%BA%E6%99%AF%E6%88%96%E8%80%85%E8%AF%B4%E5%88%A9%E7%94%A8%E8%BF%99%E4%B8%80%E7%82%B9%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="nav-number">1.2.</span> <span class="nav-text">逃逸可以接受的场景或者说利用这一点的场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#make%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">make方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%87%E7%89%87%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%AE%B9%E9%87%8F%E5%A4%A7%E4%BA%8E%E9%95%BF%E5%BA%A6%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">切片什么需要容量大于长度？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3%E5%92%8Cjava%E4%B8%AD%E7%9A%84HashMap"><span class="nav-number">2.3.</span> <span class="nav-text">map数据接口和java中的HashMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link"><span class="nav-number">2.4.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E7%99%BE%E5%88%86%E5%8F%B7"><span class="nav-number">3.</span> <span class="nav-text">输出百分号</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E5%92%8C%E6%8E%A5%E5%8F%A3%E7%BB%93%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">结构体和接口结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#go-zero-%E6%A1%86%E6%9E%B6%E4%B8%AD-%E7%9A%84%E4%BD%BF%E7%94%A8%E7%9B%AE%E7%9A%84%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">go-zero 框架中 &amp; 的使用目的总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%89%E5%A4%A7%E6%A0%B8%E5%BF%83%E7%9B%AE%E7%9A%84"><span class="nav-number">5.0.1.</span> <span class="nav-text">一、三大核心目的</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B5%8C%E5%85%A5%E7%BB%93%E6%9E%84%E4%BD%93%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">嵌入结构体的使用</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zyunfei"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">zyunfei</p>
+  <div class="site-description" itemprop="description">版本1.0</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">53</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="en"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">Go面试总结
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/_posts/">_POSTS</a></li>
+            <li><a href="/_posts/goLang/">GOLANG</a></li>
+            <li>GO面试总结</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="内存逃逸"><a href="#内存逃逸" class="headerlink" title="内存逃逸"></a>内存逃逸</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p><strong>内存逃逸</strong>：本该分配在栈上的变量，被编译器强制分配到了堆上</p>
+<h2 id="逃逸可以接受的场景或者说利用这一点的场景"><a href="#逃逸可以接受的场景或者说利用这一点的场景" class="headerlink" title="逃逸可以接受的场景或者说利用这一点的场景"></a>逃逸可以接受的场景或者说利用这一点的场景</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ✅ 大对象或生命周期长的对象</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">createLarge</span><span class="params">()</span></span> *[]<span class="type">int</span> &#123;</span><br><span class="line">    data := <span class="built_in">make</span>([]<span class="type">int</span>, <span class="number">10000</span>)</span><br><span class="line">    <span class="keyword">return</span> &amp;data  <span class="comment">// 逃逸可接受，反正栈也放不下</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 需要修改原对象的场景（分布式共享）</span></span><br><span class="line"><span class="keyword">type</span> Config <span class="keyword">struct</span> &#123;</span><br><span class="line">    data <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Config)</span></span> GetData() *Config &#123;</span><br><span class="line">    <span class="keyword">return</span> c  <span class="comment">// 逃逸可接受，这是有意为之</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><table>
+<thead>
+<tr>
+<th align="left">问题</th>
+<th align="left">答案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">什么是逃逸</td>
+<td align="left">变量本该放栈上，被放到了堆上</td>
+</tr>
+<tr>
+<td align="left">主要缺点</td>
+<td align="left">增加 GC 压力，降低性能</td>
+</tr>
+<tr>
+<td align="left">何时避免</td>
+<td align="left">小型临时对象，高频调用的函数</td>
+</tr>
+<tr>
+<td align="left">何时接受</td>
+<td align="left">大对象、需要返回指针的场景</td>
+</tr>
+<tr>
+<td align="left">分布式共享</td>
+<td align="left">返回指针是必须的，逃逸可接受</td>
+</tr>
+</tbody></table>
+<p><strong>核心原则</strong>：能放栈就放栈，需要堆时才堆。性能敏感的热路径要注意避免不必要的逃逸。</p>
+<h1 id="make方法"><a href="#make方法" class="headerlink" title="make方法"></a>make方法</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">make</span><span class="params">(t Type, size ...IntegerType)</span></span> Type</span><br><span class="line"><span class="comment">// func make(t Type, size ...IntegerType) Type   km 具体来说，t 只能是 slice（切片）、map（映射）、chan（通道） 这三种类型之一。make 不能用于创建其他类型的实例。</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="切片什么需要容量大于长度？"><a href="#切片什么需要容量大于长度？" class="headerlink" title="切片什么需要容量大于长度？"></a>切片什么需要容量大于长度？</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">预分配空间，避免频繁扩容</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">performanceBenefit</span><span class="params">()</span></span> &#123;</span><br><span class="line">    n := <span class="number">1000000</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 方法1：不预分配（多次扩容，性能差）</span></span><br><span class="line">    start := time.Now()</span><br><span class="line">    s1 := <span class="built_in">make</span>([]<span class="type">int</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">        s1 = <span class="built_in">append</span>(s1, i)</span><br><span class="line">    &#125;</span><br><span class="line">    elapsed1 := time.Since(start)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 方法2：预分配容量（零次扩容，性能好）</span></span><br><span class="line">    start = time.Now()</span><br><span class="line">    s2 := <span class="built_in">make</span>([]<span class="type">int</span>, <span class="number">0</span>, n)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">        s2 = <span class="built_in">append</span>(s2, i)</span><br><span class="line">    &#125;</span><br><span class="line">    elapsed2 := time.Since(start)</span><br><span class="line">    </span><br><span class="line">    fmt.Printf(<span class="string">&quot;不预分配: %v\n&quot;</span>, elapsed1)  <span class="comment">// 约50-100ms</span></span><br><span class="line">    fmt.Printf(<span class="string">&quot;预分配: %v\n&quot;</span>, elapsed2)   <span class="comment">// 约5-10ms（快5-10倍）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="map数据接口和java中的HashMap"><a href="#map数据接口和java中的HashMap" class="headerlink" title="map数据接口和java中的HashMap"></a>map数据接口和java中的HashMap</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">数据结构和java里面的 hashMap一样吗？ 涉及 散列桶 链表 红黑树</span><br><span class="line">不一样</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##常用的方法</span><br><span class="line"></span><br><span class="line">方法名	调用时机（触发场景）	核心功能	关键逻辑点</span><br><span class="line">makemap	<span class="built_in">make</span>(<span class="keyword">map</span>[...]...)	创建<span class="keyword">map</span>的底层入口	计算桶数B、分配桶数组、初始化哈希种子</span><br><span class="line">mapassign	m[k] = v	赋值/插入/更新key	查找→更新/创建新槽位→扩容检查→触发迁移</span><br><span class="line"></span><br><span class="line">hashGrow	写入时超过负载因子或溢出桶过多	触发扩容（翻倍/等量）	设置oldbuckets，新桶分配但暂不迁移</span><br><span class="line">growWork	mapassign中检测到growing()为真	执行渐进式桶迁移	每次写入时额外迁移<span class="number">1</span><span class="number">-2</span>个桶（当前桶+<span class="number">1</span>个其他桶）</span><br><span class="line">mapaccess1	v := m[k]	查找key并返回值	计算hash→低B位寻桶→遍历tophash和keys→比对命中</span><br><span class="line">mapiternext	<span class="keyword">for</span> <span class="keyword">range</span>遍历时	迭代下一个键值对	随机起始桶/槽位，跳过空槽，遍历主桶与溢出桶</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make(map[int]string,10)</span><br><span class="line">新建时候会初始化一个16槽位的 2个桶的结构。</span><br><span class="line">如果新增元素直到 其中一个链表的长度超过8 具体结构如何变化，画出图</span><br></pre></td></tr></table></figure>
+
+<p><img src="/$%7Bimages%7D/image-20260508164424189.png" alt="image-20260508164424189"></p>
+<p><img src="/images/image-20260508164424189.png" alt="image-20260508164424189"></p>
+<h1 id="输出百分号"><a href="#输出百分号" class="headerlink" title="输出百分号"></a>输出百分号</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">%v：通用格式，自动根据类型输出（常用调试）。</span><br><span class="line"></span><br><span class="line">%+v：输出结构体时包含字段名。</span><br><span class="line"></span><br><span class="line">%#v：输出值的 Go 语法表示。</span><br><span class="line"></span><br><span class="line">%T：输出值的类型。</span><br><span class="line"></span><br><span class="line">%f：格式化浮点数。</span><br><span class="line"></span><br><span class="line">%p：输出指针地址。</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="结构体和接口结构"><a href="#结构体和接口结构" class="headerlink" title="结构体和接口结构"></a>结构体和接口结构</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> i, j, k <span class="keyword">interface</span>&#123;&#125; <span class="comment">//空接口</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	name   <span class="type">string</span></span><br><span class="line">	age    <span class="type">int</span></span><br><span class="line">	gender <span class="type">string</span></span><br><span class="line">	Score  <span class="type">float64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="go-zero-框架中-的使用目的总结"><a href="#go-zero-框架中-的使用目的总结" class="headerlink" title="go-zero 框架中 &amp; 的使用目的总结"></a>go-zero 框架中 <code>&amp;</code> 的使用目的总结</h1><p>在 go-zero 框架中，<code>&amp;</code>（取地址）的使用非常普遍，主要目的如下：</p>
+<h3 id="一、三大核心目的"><a href="#一、三大核心目的" class="headerlink" title="一、三大核心目的"></a>一、三大核心目的</h3><table>
+<thead>
+<tr>
+<th align="left">目的</th>
+<th align="left">说明</th>
+<th align="left">典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>1. 共享状态</strong></td>
+<td align="left">多个组件共用同一份数据</td>
+<td align="left"><code>ServiceContext</code> 被所有 Logic 共享</td>
+</tr>
+<tr>
+<td align="left"><strong>2. 避免拷贝</strong></td>
+<td align="left">大对象传递只传地址（8字节）</td>
+<td align="left">配置对象、RPC客户端等大结构体</td>
+</tr>
+<tr>
+<td align="left"><strong>3. 框架约定</strong></td>
+<td align="left">go-zero 设计模式要求</td>
+<td align="left">所有 Handler、Logic 的入参和返回值都是指针</td>
+</tr>
+</tbody></table>
+<h1 id="嵌入结构体的使用"><a href="#嵌入结构体的使用" class="headerlink" title="嵌入结构体的使用"></a>嵌入结构体的使用</h1><p>&#x3D;&#x3D;Go 语言中把结构体作为匿名字段使用，称为“结构体嵌入”（Struct Embedding），目的是实现代码复用和类似继承的效果，体现 Go 的“组合优于继承”的设计哲学&#x3D;&#x3D;</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"> gozero框架的使用</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Config <span class="keyword">struct</span> &#123;</span><br><span class="line">	rest.RestConf <span class="comment">// km 嵌入，类型名 RestConf 成为字段名,  impt  嵌入，让配置项&quot;提升&quot;到顶层直接使用 c.port</span></span><br><span class="line">	<span class="comment">//RestConf rest.RestConf // km</span></span><br><span class="line">	<span class="comment">// km user-api服务需要连接 user-rpc服务</span></span><br><span class="line">	UserRpc zrpc.RpcClientConf</span><br><span class="line">	JwtAuth <span class="keyword">struct</span> &#123;</span><br><span class="line">		AccessSecret <span class="type">string</span></span><br><span class="line">		<span class="comment">//AccessExpire int64  我我们不设置过期时间</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  	RestConf <span class="keyword">struct</span> &#123;</span><br><span class="line">		service.ServiceConf   </span><br><span class="line">		Host     <span class="type">string</span> <span class="string">`json:&quot;,default=0.0.0.0&quot;`</span></span><br><span class="line">		Port     <span class="type">int</span></span><br><span class="line">		CertFile <span class="type">string</span> <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		KeyFile  <span class="type">string</span> <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		Verbose  <span class="type">bool</span>   <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		MaxConns <span class="type">int</span>    <span class="string">`json:&quot;,default=10000&quot;`</span></span><br><span class="line">		MaxBytes <span class="type">int64</span>  <span class="string">`json:&quot;,default=1048576&quot;`</span></span><br><span class="line">		<span class="comment">// milliseconds</span></span><br><span class="line">		Timeout      <span class="type">int64</span>         <span class="string">`json:&quot;,default=3000&quot;`</span></span><br><span class="line">		CpuThreshold <span class="type">int64</span>         <span class="string">`json:&quot;,default=900,range=[0:1000)&quot;`</span></span><br><span class="line">		Signature    SignatureConf <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		<span class="comment">// There are default values for all the items in Middlewares.</span></span><br><span class="line">		Middlewares MiddlewaresConf</span><br><span class="line">		<span class="comment">// TraceIgnorePaths is paths blacklist for trace middleware.</span></span><br><span class="line">		TraceIgnorePaths []<span class="type">string</span> <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	ServiceConf <span class="keyword">struct</span> &#123;</span><br><span class="line">		Name       <span class="type">string</span></span><br><span class="line">		Log        logx.LogConf</span><br><span class="line">		Mode       <span class="type">string</span> <span class="string">`json:&quot;,default=pro,options=dev|test|rt|pre|pro&quot;`</span></span><br><span class="line">		MetricsUrl <span class="type">string</span> <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		<span class="comment">// Deprecated: please use DevServer</span></span><br><span class="line">		Prometheus prometheus.Config <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		Telemetry  trace.Config      <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		DevServer  DevServerConfig   <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		Shutdown   proc.ShutdownConf <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">		<span class="comment">// Profiling is the configuration for continuous profiling.</span></span><br><span class="line">		Profiling profiling.Config <span class="string">`json:&quot;,optional&quot;`</span></span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/_posts/">_POSTS</a></li>
+            <li><a href="/_posts/goLang/">GOLANG</a></li>
+            <li>GO面试总结</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zyunfei</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  <!--  km 多级目录 -->
+      <script type="text/javascript" src="/js/category.js"></script>
+
+</body>
+</html>
