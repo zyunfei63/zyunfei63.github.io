@@ -245,7 +245,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-05-10 16:51:28" itemprop="dateModified" datetime="2026-05-10T16:51:28+08:00">2026-05-10</time>
+      <time title="Modified: 2026-05-13 14:38:43" itemprop="dateModified" datetime="2026-05-13T14:38:43+08:00">2026-05-13</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -365,6 +365,131 @@
 
 
 <hr>
+<h1 id="go-需要补充的技术"><a href="#go-需要补充的技术" class="headerlink" title="go 需要补充的技术"></a>go 需要补充的技术</h1><p>针对你列出的这三点职位要求，你需要系统学习以下具体的<strong>知识点</strong>：</p>
+<h3 id="第2点：Golang-基础、代码调优、性能优化"><a href="#第2点：Golang-基础、代码调优、性能优化" class="headerlink" title="第2点：Golang 基础、代码调优、性能优化"></a>第2点：Golang 基础、代码调优、性能优化</h3><p><strong>核心知识点：</strong></p>
+<ol>
+<li><strong>内存与逃逸分析</strong><ul>
+<li>栈 vs 堆分配</li>
+<li>逃逸分析机制（<code>go build -gcflags=&quot;-m&quot;</code>）</li>
+<li>减少内存分配：对象池 <code>sync.Pool</code>、复用 slice&#x2F;string</li>
+</ul>
+</li>
+<li><strong>GC 优化</strong><ul>
+<li>GC 触发条件、STW 过程</li>
+<li>减少 GC 压力：小对象合并、减少指针数量</li>
+<li><code>runtime.GC()</code>、<code>debug.SetGCPercent()</code></li>
+</ul>
+</li>
+<li><strong>编译器与运行时优化</strong><ul>
+<li>内联优化（inline）</li>
+<li>边界检查消除（BCE）</li>
+<li><code>//go:noinline</code>、<code>//go:nosplit</code> 等指令</li>
+</ul>
+</li>
+<li><strong>性能分析工具</strong><ul>
+<li><code>pprof</code>（CPU、内存、阻塞、互斥锁分析）</li>
+<li><code>trace</code>（运行时追踪）</li>
+<li><code>benchmark</code> 编写与解读（<code>go test -bench . -benchmem</code>）</li>
+</ul>
+</li>
+<li><strong>常见低效写法</strong><ul>
+<li>字符串拼接：<code>strings.Builder</code> vs <code>+</code></li>
+<li>类型转换：<code>[]byte</code> ↔ <code>string</code> 的零拷贝优化</li>
+<li>map 预分配容量、slice 扩容机制</li>
+<li>defer 开销及优化（避免循环中 defer）</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="第3点：goroutine、channel、mutex、syncmap、网络编程"><a href="#第3点：goroutine、channel、mutex、syncmap、网络编程" class="headerlink" title="第3点：goroutine、channel、mutex、syncmap、网络编程"></a>第3点：goroutine、channel、mutex、syncmap、网络编程</h3><p><strong>核心知识点：</strong></p>
+<ol>
+<li><strong>goroutine</strong><ul>
+<li>GPM 调度模型（G、P、M 关系）</li>
+<li>阻塞 vs 抢占式调度</li>
+<li><code>runtime.Gosched()</code>、<code>runtime.Goexit()</code></li>
+<li>goroutine 泄漏检测与预防</li>
+</ul>
+</li>
+<li><strong>channel</strong><ul>
+<li>有缓冲&#x2F;无缓冲区别</li>
+<li>channel 底层结构（hchan、环形队列）</li>
+<li><code>select</code> 多路复用（随机选择、default 非阻塞）</li>
+<li>closed channel 的行为（读&#x2F;写 panic vs 零值）</li>
+<li>nil channel 的应用场景（永久阻塞）</li>
+</ul>
+</li>
+<li><strong>mutex</strong><ul>
+<li><code>sync.Mutex</code>（正常模式&#x2F;饥饿模式）</li>
+<li><code>sync.RWMutex</code>（读写锁适用场景）</li>
+<li>锁复制问题（<code>go vet</code> 检测）</li>
+<li><code>sync/atomic</code> 原子操作（无锁编程）</li>
+</ul>
+</li>
+<li><strong>syncmap</strong><ul>
+<li><code>sync.Map</code> 适用场景（读多写少、key 稳定）</li>
+<li>底层架构（read + dirty 双 Map）</li>
+<li>性能特点与局限性</li>
+</ul>
+</li>
+<li><strong>网络编程</strong><ul>
+<li>TCP&#x2F;UDP 基础：<code>net.Dial</code>、<code>net.Listen</code>、<code>conn.Read/Write</code></li>
+<li>HTTP 客户端&#x2F;服务端（<code>net/http</code> 包）</li>
+<li>连接池实现、超时控制（<code>context</code>、<code>SetDeadline</code>）</li>
+<li>HTTP&#x2F;2 与 gRPC 基础</li>
+<li><code>net.Conn</code> 的阻塞与非阻塞（Go 底层封装）</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="第4点：restful-接口开发"><a href="#第4点：restful-接口开发" class="headerlink" title="第4点：restful 接口开发"></a>第4点：restful 接口开发</h3><p><strong>核心知识点：</strong></p>
+<ol>
+<li><strong>RESTful 规范</strong><ul>
+<li>资源（Resource）与表现层（Representation）</li>
+<li>正确使用 HTTP 方法（GET、POST、PUT、PATCH、DELETE）</li>
+<li>状态码规范（200、201、400、401、403、404、429、500 等）</li>
+<li>幂等性设计（PUT vs POST 的区别）</li>
+</ul>
+</li>
+<li><strong>路由与请求处理</strong><ul>
+<li><code>net/http</code> 原生 ServeMux（局限性）</li>
+<li>第三方路由：<code>gorilla/mux</code>、<code>chi</code>（推荐）、<code>gin</code>、<code>echo</code></li>
+<li>路径参数（<code>/users/&#123;id&#125;</code>）、查询参数、请求体解析</li>
+</ul>
+</li>
+<li><strong>中间件（Middleware）</strong><ul>
+<li>日志、鉴权（JWT Token）、限流、恢复（recovery）</li>
+<li>自定义中间件（函数式、链式调用）</li>
+</ul>
+</li>
+<li><strong>数据验证与序列化</strong><ul>
+<li>JSON 序列化&#x2F;反序列化（<code>json</code> tag、omitempty）</li>
+<li>数据验证库（<code>go-playground/validator</code>）</li>
+<li>XML、Protobuf 等格式可选</li>
+</ul>
+</li>
+<li><strong>错误处理</strong><ul>
+<li>结构化错误响应（code、message、details）</li>
+<li>自定义业务错误类型</li>
+</ul>
+</li>
+<li><strong>接口文档</strong><ul>
+<li>Swagger&#x2F;OpenAPI 生成（<code>swaggo/swag</code>）</li>
+</ul>
+</li>
+<li><strong>进阶</strong><ul>
+<li>版本管理（URL、Header、Accept 字段）</li>
+<li>分页、过滤、排序设计</li>
+<li>跨域 CORS（<code>rs/cors</code> 中间件）</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="建议学习顺序"><a href="#建议学习顺序" class="headerlink" title="建议学习顺序"></a>建议学习顺序</h3><ol>
+<li><strong>先掌握基础</strong>：Golang 语法、goroutine + channel 基本用法、net&#x2F;http 快速写简单 API。</li>
+<li><strong>再深入调优</strong>：学 pprof、逃逸分析、锁优化、sync.Map 原理。</li>
+<li><strong>最后 restful 实践</strong>：用 gin 或 chi 完成一个完整项目（带 jwt、中间件、Swagger 文档）。</li>
+</ol>
+<p>需要的话，我可以针对任一模块给你画一个<strong>详细的学习路线图</strong>或提供<strong>具体代码示例</strong>。</p>
 
       
     </div>
