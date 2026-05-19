@@ -179,7 +179,7 @@
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">54</span>
+        <span class="site-state-item-count">56</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -245,7 +245,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-05-08 21:14:59" itemprop="dateModified" datetime="2026-05-08T21:14:59+08:00">2026-05-08</time>
+      <time title="Modified: 2026-05-17 17:46:13" itemprop="dateModified" datetime="2026-05-17T17:46:13+08:00">2026-05-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -367,11 +367,26 @@
 
 <h1 id="无缓冲通道和有缓冲的使用场景"><a href="#无缓冲通道和有缓冲的使用场景" class="headerlink" title="无缓冲通道和有缓冲的使用场景"></a>无缓冲通道和有缓冲的使用场景</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">//km 无缓冲通道 定义一个退出信号，用于监听client退出</span></span><br><span class="line">	<span class="keyword">var</span> isQuit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">bool</span>)</span><br><span class="line">------------------------------</span><br><span class="line">			isQuit &lt;- <span class="literal">true</span></span><br><span class="line">--------------------</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> &lt;-isQuit:</span><br><span class="line">			logoutInfo := fmt.Sprintf(<span class="string">&quot;%s exit already!\n&quot;</span>, user.name)</span><br><span class="line">			fmt.Println(<span class="string">&quot;删除当前用户:&quot;</span>, user.name)</span><br><span class="line">			<span class="built_in">delete</span>(allUsers, user.id)</span><br><span class="line">			message &lt;- logoutInfo</span><br></pre></td></tr></table></figure>
 
+
+
+
+
+<h1 id="go-zero的服务发现注册原理进行分析"><a href="#go-zero的服务发现注册原理进行分析" class="headerlink" title="go-zero的服务发现注册原理进行分析"></a>go-zero的服务发现注册原理进行分析</h1><h2 id="因为在go-zero中无论是server还是client在本质上都是对grpc的使用进行封装，因此对程序的本质来说实际就是在使用grpc"><a href="#因为在go-zero中无论是server还是client在本质上都是对grpc的使用进行封装，因此对程序的本质来说实际就是在使用grpc" class="headerlink" title="因为在go-zero中无论是server还是client在本质上都是对grpc的使用进行封装，因此对程序的本质来说实际就是在使用grpc"></a>因为在go-zero中无论是server还是client在本质上都是对grpc的使用进行封装，因此对程序的本质来说实际就是在使用grpc</h2><p><img src="/$%7Bimages%7D/image-20260517150755506.png" alt="image-20260517150755506"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">G:\GOWorkspace\pkg\mod\google.golang.org\grpc@v1.65.0\server.go  </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#客户端要求</span></span></span><br><span class="line">G:\GOWorkspace\pkg\mod\google.golang.org\grpc@v1.65.0\clientconn.go</span><br><span class="line">G:\GOWorkspace\pkg\mod\google.golang.org\grpc@v1.65.0\call.go</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="设计装饰模式"><a href="#设计装饰模式" class="headerlink" title="设计装饰模式"></a>设计装饰模式</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">MyBatis里的缓存模块大量用了装饰器模式。比如基础的PerpetualCache是核心缓存实现，</span><br><span class="line">然后用LruCache装饰它，</span><br><span class="line"></span><br><span class="line">增加了LRU淘汰策略；</span><br><span class="line">再套一层SynchronizedCache，</span><br><span class="line">就加上了线程安全功能。你可以理解为PerpetualCache是个素包子，LruCache给它加了层肉馅，SynchronizedCache又给它包了层安全的外皮。</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   *PerpetualCache (基础)</span><br><span class="line">   *     ↓</span><br><span class="line">   * ScheduledCache (如果设置了 clearInterval)</span><br><span class="line">   *     ↓</span><br><span class="line">   * SerializedCache (如果 readWrite = true)</span><br><span class="line">   *     ↓</span><br><span class="line">   * LoggingCache</span><br><span class="line">   *     ↓</span><br><span class="line">   * SynchronizedCache</span><br><span class="line">   *     ↓</span><br><span class="line">   * BlockingCache (如果 blocking = true)</span><br><span class="line">   * @param cache</span><br><span class="line">   * @return</span><br><span class="line">   */</span><br><span class="line">  private Cache setStandardDecorators(Cache cache) &#123;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="gozero-grpc结合提示装饰器模式"><a href="#gozero-grpc结合提示装饰器模式" class="headerlink" title="gozero-grpc结合提示装饰器模式"></a>gozero-grpc结合提示装饰器模式</h2><p><img src="/$%7Bimages%7D/image-20260517174554388.png" alt="image-20260517174554388"></p>
+<p><img src="/images/image-20260517174554388.png" alt="image-20260517174554388"></p>
 <h1 id="golang涉及的适配器模式"><a href="#golang涉及的适配器模式" class="headerlink" title="golang涉及的适配器模式"></a>golang涉及的适配器模式</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// km 这里是满足 标准 RPC 方法签名（满足 net/rpc 要求）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a *RpcAdapter)</span></span> HelloWorld(name <span class="type">string</span>, resp *Resp) <span class="type">error</span> &#123;</span><br><span class="line">	<span class="comment">//impt 下面是雷士gozero格式的 grpc 方式  调用业务层的直接返回方法</span></span><br><span class="line">	result, err := a.service.HelloWorld(name)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 填充到指针参数</span></span><br><span class="line">	*resp = *result</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
-
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
       
     </div>
 
